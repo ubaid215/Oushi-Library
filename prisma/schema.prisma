@@ -1,0 +1,385 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ADMIN AUTH (NextAuth v5)
+
+model AdminUser {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          AdminRole @default(EDITOR)
+
+  accounts      Account[]
+  sessions      Session[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String    @id @default(uuid())
+  sessionToken String    @unique
+  userId       String
+  expires      DateTime
+
+  user         AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// FILE STORAGE SYSTEM
+
+model File {
+  id              String   @id @default(uuid())
+  filename        String
+  originalName    String
+  url             String
+  publicId        String?  // Cloudinary public_id
+  mimeType        String
+  size            Int      // bytes
+  compressedSize  Int?     // bytes after compression
+  storage         FileStorage @default(CLOUDINARY)
+  isPublic        Boolean  @default(true)
+
+  // Relations
+  authorImages    Author[]       @relation("AuthorImage")
+  fatwaPdfs       Fatwa[]        @relation("FatwaPdf")
+  bookPdfs        Book[]         @relation("BookPdf")
+  bookCovers      Book[]         @relation("BookCover")
+
+  createdAt       DateTime @default(now())
+
+  @@index([publicId])
+}
+
+enum FileStorage {
+  S3
+  CLOUDINARY
+  LOCAL
+  R2
+}
+
+//===========================//
+// AUTHORS
+//==========================//
+
+model Author {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  bio       String?  @db.Text
+  birthYear Int?
+  deathYear Int?
+  nationality String?
+  isActive  Boolean  @default(true)
+
+  imageId   String?
+  image     File?    @relation("AuthorImage", fields: [imageId], references: [id])
+
+  fatawa    Fatwa[]
+  books     Book[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([name])
+}
+
+//////////////////////////
+// CATEGORIES (TREE)
+//////////////////////////
+
+model Category {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  description String?      @db.Text
+  type        CategoryType
+  parentId    String?
+  order       Int          @default(0)
+  isActive    Boolean      @default(true)
+
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+
+  fatawa    Fatwa[]
+  books     Book[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([type])
+  @@index([parentId])
+}
+
+enum CategoryType {
+  FATWA
+  BOOK
+  BOTH
+}
+
+//////////////////////////
+// FATWA
+//////////////////////////
+
+model Fatwa {
+  id             String   @id @default(uuid())
+  title          String
+  slug           String   @unique
+  question       String   @db.Text
+  answer         String   @db.Text
+  language       String   @default("ur")
+  status         ContentStatus @default(DRAFT)
+
+  categoryId     String
+  category       Category @relation(fields: [categoryId], references: [id])
+
+  authorId       String
+  author         Author   @relation(fields: [authorId], references: [id])
+
+  pdfFileId      String?
+  pdfFile        File?    @relation("FatwaPdf", fields: [pdfFileId], references: [id])
+
+  seoTitle       String?
+  seoDescription String?  @db.Text
+  seoKeywords    String[]
+
+  isPublished    Boolean  @default(false)
+  publishedAt    DateTime?
+  viewCount      Int      @default(0)
+  shareCount     Int      @default(0)
+
+  tags           FatwaTag[]
+  revisions      FatwaRevision[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status])
+  @@index([language])
+  @@index([isPublished, publishedAt])
+}
+
+//////////////////////////
+// BOOK
+//////////////////////////
+
+model Book {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  description   String?  @db.Text
+  language      String   @default("ur")
+  isbn          String?
+  publisher     String?
+  edition       String?
+  status        ContentStatus @default(DRAFT)
+
+  authorId      String
+  author        Author   @relation(fields: [authorId], references: [id])
+
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+
+  pdfFileId     String
+  pdfFile       File     @relation("BookPdf", fields: [pdfFileId], references: [id])
+
+  coverImageId  String?
+  coverImage    File?    @relation("BookCover", fields: [coverImageId], references: [id])
+
+  downloadCount Int      @default(0)
+  viewCount     Int      @default(0)
+
+  isPublished   Boolean  @default(false)
+  publishedAt   DateTime?
+  isFeatured    Boolean  @default(false)
+
+  tags          BookTag[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([status])
+  @@index([language])
+  @@index([isFeatured])
+  @@index([isPublished, publishedAt])
+}
+
+//////////////////////////
+// CONTENT STATUS
+//////////////////////////
+
+enum ContentStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+//////////////////////////
+// TAG SYSTEM
+//////////////////////////
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  count     Int      @default(0)
+
+  fatawa    FatwaTag[]
+  books     BookTag[]
+
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model FatwaTag {
+  fatwaId String
+  tagId   String
+
+  fatwa   Fatwa @relation(fields: [fatwaId], references: [id], onDelete: Cascade)
+  tag     Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([fatwaId, tagId])
+}
+
+model BookTag {
+  bookId String
+  tagId  String
+
+  book   Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, tagId])
+}
+
+//////////////////////////
+// FATWA REVISION
+//////////////////////////
+
+model FatwaRevision {
+  id        String   @id @default(uuid())
+  fatwaId   String
+  fatwa     Fatwa    @relation(fields: [fatwaId], references: [id], onDelete: Cascade)
+
+  title     String
+  question  String   @db.Text
+  answer    String   @db.Text
+
+  editedBy  String
+  reason    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([fatwaId])
+}
+
+//////////////////////////
+// ANALYTICS (lightweight)
+//////////////////////////
+
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  referer   String?
+  userAgent String?
+  ip        String?
+  country   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
+
+model DownloadLog {
+  id         String   @id @default(uuid())
+  bookId     String
+  ip         String?
+  userAgent  String?
+  country    String?
+
+  createdAt  DateTime @default(now())
+
+  @@index([bookId])
+  @@index([createdAt])
+}
+
+//////////////////////////
+// SITE SETTINGS
+//////////////////////////
+
+model SiteSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  type      SettingType @default(STRING)
+  group     String   @default("general")
+
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+}
+
+enum SettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  HTML
+}

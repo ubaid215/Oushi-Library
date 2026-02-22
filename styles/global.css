@@ -1,0 +1,12 @@
+/* 
+  Import the Bibliotheca Design System
+  The full global.css is in the output.
+  In production, copy the generated global.css here.
+  
+  This file references the design system from global.css.
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap");
+
+/* ─── Paste the full content of global.css here ─── */
+/* The complete design system file has been provided separately as global.css */

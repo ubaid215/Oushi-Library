@@ -1,0 +1,15 @@
+# Deploy Stirling PDF on Railway
+# 1. Go to railway.app → New Project → Deploy from Docker image
+# 2. Image: frooodle/s-pdf:latest
+# 3. Set these environment variables in Railway dashboard:
+#    DOCKER_ENABLE_SECURITY=false
+#    JAVA_TOOL_OPTIONS=-Xmx512m
+# 4. Railway auto-assigns a public URL — copy it into your Vercel env:
+#    STIRLING_PDF_URL=https://your-app.up.railway.app
+
+[deploy]
+startCommand = ""   # image has its own entrypoint
+
+[environments.production.variables]
+DOCKER_ENABLE_SECURITY = "false"
+JAVA_TOOL_OPTIONS      = "-Xmx512m"
