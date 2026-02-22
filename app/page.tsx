@@ -9,7 +9,7 @@ import AuthorsShowcase from "@/components/home/AuthorsShowcase";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Bibliotheca — Islamic Books & Fatawa Library",
+  title: "Oushi — Islamic Books & Fatawa Library",
   description:
     "A free digital library of thousands of Islamic books, fatawa, and scholarly works in Urdu, Arabic, and English — freely readable and downloadable.",
 };

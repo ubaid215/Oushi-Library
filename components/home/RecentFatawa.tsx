@@ -26,6 +26,17 @@ const LANG_LABELS: Record<string, string> = {
   en: "English",
 };
 
+// Helper to strip HTML tags from the rich text editor content
+function stripHtml(html: string) {
+  if (typeof document === "undefined") {
+    // Basic regex fallback for SSR
+    return html.replace(/<[^>]*>?/gm, "").trim();
+  }
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+}
+
 export default function RecentFatawa({ fatawa }: RecentFatawaProps) {
   if (!fatawa.length) return null;
 
@@ -203,7 +214,7 @@ export default function RecentFatawa({ fatawa }: RecentFatawaProps) {
                         overflow: "hidden",
                       }}
                     >
-                      {f.question.slice(0, 140)}…
+                      {stripHtml(f.question).slice(0, 140)}…
                     </p>
                   </div>
                 </div>

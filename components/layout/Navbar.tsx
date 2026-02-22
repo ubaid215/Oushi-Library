@@ -13,7 +13,9 @@ import {
   FolderOpen,
   BarChart3,
   X,
+  Search,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/", icon: LayoutDashboard },
@@ -21,13 +23,14 @@ const NAV_ITEMS = [
   { label: "Fatawa", href: "/fatawa", icon: ScrollText },
   { label: "Authors", href: "/authors", icon: Users },
   { label: "Categories", href: "/categories", icon: FolderOpen },
-  { label: "Tags", href: "/tags", icon: Tag },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 8);
@@ -177,8 +180,50 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right side */}
+        {/* Right side: Search & Burger */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexShrink: 0, marginLeft: "auto" }}>
+
+          {/* Desktop Search Bar */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                router.push(`/books?search=${encodeURIComponent(searchQuery.trim())}`);
+                setSearchQuery("");
+                setOpen(false);
+              }
+            }}
+            className="nb-desktop"
+            style={{ position: "relative", width: 200, marginRight: "0.5rem" }}
+          >
+            <input
+              type="text"
+              placeholder="Search library..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(196,157,84,0.2)",
+                borderRadius: "99px",
+                padding: "0.35rem 1rem 0.35rem 2.25rem",
+                color: "rgba(245,237,224,0.9)",
+                fontSize: "0.8rem",
+                outline: "none",
+                transition: "all 0.2s"
+              }}
+              onFocus={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.1)";
+                e.target.style.borderColor = "rgba(196,157,84,0.4)";
+              }}
+              onBlur={(e) => {
+                e.target.style.background = "rgba(255,255,255,0.06)";
+                e.target.style.borderColor = "rgba(196,157,84,0.2)";
+              }}
+            />
+            <Search size={14} style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,224,0.4)" }} />
+          </form>
+
           {/* Mobile burger */}
           <button
             className="nb-burger"

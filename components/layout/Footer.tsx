@@ -30,8 +30,8 @@ export default function Footer() {
     <footer
       style={{
         background: "#080705",
-        borderTop: "1px solid rgba(196,157,84,0.12)",
-        color: "rgba(245,237,224,0.4)",
+        borderTop: "1px solid rgba(196,157,84,0.2)",
+        color: "rgba(245,237,224,0.7)",
         position: "relative",
         overflow: "hidden",
       }}
@@ -44,9 +44,9 @@ export default function Footer() {
           top: 0,
           left: 0,
           right: 0,
-          height: 1,
+          height: 2,
           background:
-            "linear-gradient(90deg, transparent 0%, rgba(196,157,84,0.5) 30%, rgba(196,157,84,0.8) 50%, rgba(196,157,84,0.5) 70%, transparent 100%)",
+            "linear-gradient(90deg, transparent 0%, rgba(196,157,84,0.6) 30%, rgba(196,157,84,1) 50%, rgba(196,157,84,0.6) 70%, transparent 100%)",
         }}
       />
 
@@ -57,9 +57,9 @@ export default function Footer() {
           position: "absolute",
           right: "4%",
           bottom: "10%",
-          fontSize: "clamp(5rem, 12vw, 10rem)",
+          fontSize: "clamp(6rem, 15vw, 12rem)",
           fontFamily: "Georgia, serif",
-          color: "rgba(196,157,84,0.04)",
+          color: "rgba(196,157,84,0.06)",
           lineHeight: 1,
           direction: "rtl",
           userSelect: "none",
@@ -74,7 +74,7 @@ export default function Footer() {
           maxWidth: 1280,
           margin: "0 auto",
           padding:
-            "clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem)",
+            "clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem)",
         }}
       >
         {/* Top row */}
@@ -83,7 +83,7 @@ export default function Footer() {
             display: "grid",
             gridTemplateColumns: "2fr 1fr 1fr",
             gap: "clamp(2rem, 5vw, 5rem)",
-            marginBottom: "clamp(2rem, 4vw, 3rem)",
+            marginBottom: "clamp(2.5rem, 4vw, 3.5rem)",
             alignItems: "start",
           }}
           className="ft-grid"
@@ -95,16 +95,16 @@ export default function Footer() {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "0.625rem",
+                gap: "0.75rem",
                 textDecoration: "none",
-                marginBottom: "1rem",
+                marginBottom: "1.25rem",
               }}
             >
               <div
                 style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: "7px",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "8px",
                   background: "linear-gradient(135deg, #c49d54, #a07830)",
                   display: "flex",
                   alignItems: "center",
@@ -112,15 +112,15 @@ export default function Footer() {
                   flexShrink: 0,
                 }}
               >
-                <BookOpen size={14} color="white" strokeWidth={2} />
+                <BookOpen size={18} color="white" strokeWidth={2} />
               </div>
               <div>
                 <span
                   style={{
                     fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    fontSize: "1.1rem",
+                    fontSize: "1.3rem",
                     fontWeight: 700,
-                    color: "rgba(245,237,224,0.85)",
+                    color: "rgba(245,237,224,0.95)",
                     letterSpacing: "-0.01em",
                     display: "block",
                     lineHeight: 1,
@@ -131,13 +131,13 @@ export default function Footer() {
                 <span
                   style={{
                     fontFamily: "system-ui, sans-serif",
-                    fontSize: "0.52rem",
+                    fontSize: "0.6rem",
                     fontWeight: 700,
-                    letterSpacing: "0.18em",
+                    letterSpacing: "0.2em",
                     textTransform: "uppercase",
                     color: "#c49d54",
                     display: "block",
-                    marginTop: "2px",
+                    marginTop: "3px",
                   }}
                 >
                   Library
@@ -148,9 +148,9 @@ export default function Footer() {
             <p
               style={{
                 fontFamily: "system-ui, sans-serif",
-                fontSize: "0.8rem",
+                fontSize: "0.9rem",
                 lineHeight: 1.7,
-                color: "rgba(245,237,224,0.3)",
+                color: "rgba(245,237,224,0.6)",
                 maxWidth: "32ch",
               }}
             >
@@ -165,13 +165,13 @@ export default function Footer() {
               <p
                 style={{
                   fontFamily: "system-ui, sans-serif",
-                  fontSize: "0.62rem",
+                  fontSize: "0.7rem",
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
                   color: "#c49d54",
-                  marginBottom: "0.875rem",
-                  opacity: 0.8,
+                  marginBottom: "1.1rem",
+                  opacity: 0.9,
                 }}
               >
                 {col.heading}
@@ -182,7 +182,7 @@ export default function Footer() {
                   padding: 0,
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.5rem",
+                  gap: "0.7rem",
                 }}
               >
                 {col.items.map((item) => (
@@ -191,19 +191,24 @@ export default function Footer() {
                       href={item.href}
                       style={{
                         fontFamily: "system-ui, sans-serif",
-                        fontSize: "0.82rem",
-                        color: "rgba(245,237,224,0.35)",
+                        fontSize: "0.95rem",
+                        color: "rgba(245,237,224,0.7)",
                         textDecoration: "none",
-                        transition: "color 0.18s",
+                        transition: "color 0.2s, padding-left 0.2s",
                         display: "inline-block",
+                        padding: "2px 0",
                       }}
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLElement).style.color =
-                          "rgba(245,237,224,0.75)";
+                          "#c49d54";
+                        (e.currentTarget as HTMLElement).style.paddingLeft =
+                          "4px";
                       }}
                       onMouseLeave={(e) => {
                         (e.currentTarget as HTMLElement).style.color =
-                          "rgba(245,237,224,0.35)";
+                          "rgba(245,237,224,0.7)";
+                        (e.currentTarget as HTMLElement).style.paddingLeft =
+                          "0";
                       }}
                     >
                       {item.label}
@@ -220,8 +225,8 @@ export default function Footer() {
           style={{
             height: 1,
             background:
-              "linear-gradient(90deg, transparent, rgba(196,157,84,0.15), transparent)",
-            marginBottom: "1.25rem",
+              "linear-gradient(90deg, transparent, rgba(196,157,84,0.25), transparent)",
+            marginBottom: "1.5rem",
           }}
         />
 
@@ -231,15 +236,15 @@ export default function Footer() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "1rem",
+            gap: "1.25rem",
             flexWrap: "wrap",
           }}
         >
           <p
             style={{
               fontFamily: "system-ui, sans-serif",
-              fontSize: "0.72rem",
-              color: "rgba(245,237,224,0.2)",
+              fontSize: "0.85rem",
+              color: "rgba(245,237,224,0.5)",
             }}
           >
             © {year} Oushi · Islamic Library Management System
@@ -249,53 +254,29 @@ export default function Footer() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "1.25rem",
+              gap: "1.5rem",
             }}
           >
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                fontFamily: "system-ui, sans-serif",
-                fontSize: "0.72rem",
-                color: "rgba(245,237,224,0.22)",
-                textDecoration: "none",
-                transition: "color 0.18s",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.color =
-                  "rgba(245,237,224,0.55)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color =
-                  "rgba(245,237,224,0.22)";
-              }}
-            >
-              <Github size={12} />
-              Source
-              <ExternalLink size={10} />
-            </a>
-
             <Link
               href="/admin"
               style={{
                 fontFamily: "system-ui, sans-serif",
-                fontSize: "0.72rem",
-                color: "rgba(196,157,84,0.35)",
+                fontSize: "0.85rem",
+                color: "#c49d54",
                 textDecoration: "none",
-                transition: "color 0.18s",
+                transition: "color 0.2s, gap 0.2s",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.25rem",
+                fontWeight: 500,
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.color =
-                  "rgba(196,157,84,0.7)";
+                (e.currentTarget as HTMLElement).style.color = "#e5b76e";
+                (e.currentTarget as HTMLElement).style.gap = "0.5rem";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color =
-                  "rgba(196,157,84,0.35)";
+                (e.currentTarget as HTMLElement).style.color = "#c49d54";
+                (e.currentTarget as HTMLElement).style.gap = "0.25rem";
               }}
             >
               Admin Panel →
