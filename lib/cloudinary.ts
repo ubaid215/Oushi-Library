@@ -14,11 +14,18 @@ export { cloudinary };
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const MAX_UPLOAD_BYTES = 9.5 * 1024 * 1024; // 9.5MB — Cloudinary free tier safe limit
-const MAX_INPUT_BYTES = 35 * 1024 * 1024; // 35MB  — max we accept before compression
+const MAX_INPUT_BYTES = 35 * 1024 * 1024;   // 35MB  — max we accept before compression
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+
+function toDownloadUrl(url: string): string {
+  if (url.includes("fl_attachment")) return url; // already set
+  return url.replace("/raw/upload/", "/raw/upload/fl_attachment/");
+}
 
 // ── pdf-lib fallback (metadata strip only) ───────────────────────────────────
-// Used when Stirling PDF is unavailable. Gives minor size reduction only —
-// not suitable for image-heavy PDFs but prevents a hard crash.
+
 async function compressWithPdfLib(buffer: Buffer): Promise<CompressedPdfResult> {
   const originalSize = buffer.length;
 
@@ -33,10 +40,14 @@ async function compressWithPdfLib(buffer: Buffer): Promise<CompressedPdfResult> 
     pdfDoc.setAuthor("");
     pdfDoc.setSubject("");
     pdfDoc.setKeywords([]);
-    pdfDoc.setProducer("Bibliotheca");
-    pdfDoc.setCreator("Bibliotheca Admin");
+    pdfDoc.setProducer("Oushi");
+    pdfDoc.setCreator("Oushi Admin");
 
-    const bytes = await pdfDoc.save({ useObjectStreams: true, addDefaultPage: false, objectsPerTick: 50 });
+    const bytes = await pdfDoc.save({
+      useObjectStreams: true,
+      addDefaultPage: false,
+      objectsPerTick: 50,
+    });
     const result = Buffer.from(bytes);
     const ratio = ((originalSize - result.length) / originalSize) * 100;
 
@@ -72,7 +83,7 @@ export async function compressPdf(
   if (!stirlingUrl) {
     console.warn(
       "[pdf-compress] STIRLING_PDF_URL not set — falling back to pdf-lib (limited compression). " +
-      "Deploy Stirling PDF and set the env var for proper compression."
+        "Deploy Stirling PDF and set the env var for proper compression."
     );
   } else {
     console.warn(
@@ -100,14 +111,16 @@ export async function uploadToCloudinary(
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_chunked_stream(
       {
-        folder: `bibliotheca/${folder}`,
+        folder: `Oushi/${folder}`,
         public_id: filename,
         resource_type: resourceType,
         use_filename: true,
         unique_filename: true,
         overwrite: false,
         chunk_size: 12000000,
-        timeout: 120000, // 120 seconds upload timeout
+        timeout: 120000,
+        access_mode: "public",
+        type: "upload",
         ...(resourceType === "raw" && { format: "pdf" }),
       },
       (error, result) => {
@@ -139,26 +152,47 @@ export async function compressAndUploadPdf(
 ): Promise<UploadResult & { compressionRatio: number; strategy: string; targetMet: boolean }> {
   const originalSize = buffer.length;
 
+  // ── Step 1: Compress ──────────────────────────────────────────────────────
+  const compressed = await compressPdf(buffer, filename);
+
+  console.log(
+    `[pdf-compress] ${filename}: ${formatFileSize(originalSize)} → ` +
+      `${formatFileSize(compressed.compressedSize)} (${compressed.ratio}% reduction, strategy: ${compressed.strategy})`
+  );
+
+  // ── Step 2: Guard — reject if still too large after compression ───────────
+  if (compressed.buffer.length > MAX_UPLOAD_BYTES) {
+    throw new Error(
+      `File is ${formatFileSize(compressed.buffer.length)} after compression — ` +
+        `exceeds the ${formatFileSize(MAX_UPLOAD_BYTES)} upload limit. ` +
+        `Please reduce the PDF size before uploading.`
+    );
+  }
+
+  // ── Step 3: Upload compressed buffer ─────────────────────────────────────
   const safeName = filename
-    .replace(/\\.pdf$/i, "")
+    .replace(/\.pdf$/i, "")
     .replace(/[^a-z0-9-_]/gi, "_")
     .slice(0, 80);
 
-  const { url, publicId } = await uploadToCloudinary(buffer, {
+  const { url, publicId, size } = await uploadToCloudinary(compressed.buffer, {
     folder,
     filename: safeName,
     resourceType: "raw",
   });
 
+  // ── Step 4: Inject fl_attachment so downloads always trigger a save dialog ─
+  const downloadUrl = toDownloadUrl(url);
+
   return {
     fileId: publicId,
-    url,
+    url: downloadUrl,          // ← stored URL already has fl_attachment baked in
     publicId,
-    size: originalSize,
-    compressedSize: originalSize,
-    compressionRatio: 0,
-    strategy: "none (compression bypassed)",
-    targetMet: true,
+    size: originalSize,        // original size before compression
+    compressedSize: compressed.compressedSize,
+    compressionRatio: compressed.ratio,
+    strategy: compressed.strategy,
+    targetMet: compressed.buffer.length <= MAX_UPLOAD_BYTES,
   };
 }
 
