@@ -359,6 +359,7 @@ export default function BookForm({ mode, initialData, authors, categories, tags 
                       <>
                         <FileText size={36} className="file-upload__icon" />
                         <p className="file-upload__title">Drop PDF here or click to browse</p>
+                        <p className="file-upload__hint">Maximum 10 mb file can be upload</p>
                       </>
                     )}
                   </label>
